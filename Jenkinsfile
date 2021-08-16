@@ -15,10 +15,13 @@ pipeline{
             }
         }
         stage('Sonar start'){
+            steps{
             withSonarQubeEnv('Test_Sonar'){
                 bat "${scannerHome}\\SonarScanner.MSBuild.exe begin /k:biannualkey /n:biannualname /v:1.0"
             }
         }
+        }
+        
         stage('Build code for feature'){
             steps{
                 bat "dotnet build WebApplication4\\WebApplication4.csproj -c Release -o WebApplication4/app/build"
@@ -52,10 +55,12 @@ pipeline{
             }
         }
         stage('Pre container check'){
-            steps{
-                environment{
+              
+                  environment{
                     CONTAINER_ID = "${bat(script:'docker ps -aqf name="^c-biannual$"', returnStdout: true).trim().readLines().drop(1).join("")}"
                 }
+            steps{
+
                 script{
                     if(env.CONTAINER_ID!=null){
                         bat "docker rm -f c-biannual"
