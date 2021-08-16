@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-settings-biannual
+  namespace: biannual
+data:
+  property1: "Hello"
+  property2: "DevOps"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: biannual-deployment
+  namespace: biannual
+  labels:
+    app: biannual-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: biannual-app
+  template:
+    metadata:
+      labels:
+        app: biannual-app
+    spec:
+      containers:
+        - name: biannual-app
+          image: bhavinibatra/biannual:latest
+          ports:
+            - containerPort: 80
+              name: http
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: app-settings-biannual
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: biannual-app
+  namespace: biannual
+spec:
+  selector:
+    app: biannual-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: LoadBalancer
